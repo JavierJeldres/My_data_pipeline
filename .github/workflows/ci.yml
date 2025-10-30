@@ -53,6 +53,7 @@ jobs:
                 method: service-account
                 project: $GCP_PROJECT_ID
                 dataset: $GCP_DATASET
+                location: us-central1
                 threads: 4
           " > ~/.dbt/profiles.yml
 
