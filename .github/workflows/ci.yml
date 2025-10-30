@@ -61,6 +61,9 @@ jobs:
         # 'cd' a la carpeta dbt_project antes de ejecutar
         run: cd dbt_project && dbt deps
 
+      - name: Run dbt run
+        run: cd dbt_project && dbt run
+
       - name: Run dbt test
         # 'cd' a la carpeta dbt_project antes de ejecutar
         run: cd dbt_project && dbt test
