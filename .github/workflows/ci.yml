@@ -1,0 +1,65 @@
+name: CI - dbt run & test
+
+# Cuándo se ejecuta este workflow
+on:
+  # Se ejecuta en cada push a cualquier rama
+  push:
+    branches:
+      - "**" # Elige todas las ramas
+
+jobs:
+  run_dbt_tests:
+    runs-on: ubuntu-latest # Usará un robot Linux
+
+    # Variables de entorno que usará el robot
+    env:
+      # Usamos el secreto que guardamos en GitHub
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      # CAMBIA ESTO por tu ID de proyecto de GCP
+      GCP_PROJECT_ID: "integra-buk-bq" 
+      # CAMBIA ESTO por el nombre de tu dataset de analytics
+      # (el que está en tu profiles.yml, ej: dbt_jjeldres)
+      GCP_DATASET: "analytics" 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dbt
+        run: |
+          pip install dbt-core dbt-bigquery
+
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: ${{ env.GCP_SA_KEY }}
+
+      - name: Setup dbt profiles.yml for Service Account
+        # Esto es clave: creamos un profiles.yml temporal para el robot
+        # ¡OJO! El nombre del proyecto (dbt_projet) debe ser exacto
+        # al nombre de tu carpeta de dbt (dbt_project o dbt_projet).
+        run: |
+          mkdir -p ~/.dbt
+          echo "dbt_project:
+            target: prod
+            outputs:
+              prod:
+                type: bigquery
+                method: service-account
+                project: $GCP_PROJECT_ID
+                dataset: $GCP_DATASET
+                threads: 4
+          " > ~/.dbt/profiles.yml
+
+      - name: Run dbt deps
+        # 'cd' a la carpeta dbt_project antes de ejecutar
+        run: cd dbt_project && dbt deps
+
+      - name: Run dbt test
+        # 'cd' a la carpeta dbt_project antes de ejecutar
+        run: cd dbt_project && dbt test

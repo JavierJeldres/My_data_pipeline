@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: species_measurements
+    description: "Tabla de hechos (Fact Table) que promedia las métricas de Iris por especie."
+    columns:
+      - name: species_name
+        description: "La clave primaria (PK) de esta tabla, el nombre de la especie."
+        tests:
+          - unique
+          - not_null

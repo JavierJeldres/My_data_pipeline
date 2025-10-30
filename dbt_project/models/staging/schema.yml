@@ -1,0 +1,27 @@
+version: 2
+# ==================================
+# 1. AÑADE ESTE BLOQUE 'SOURCES'
+# Esto soluciona el error "source not found"
+# ==================================
+sources:
+  - name: raw_data     # Esto es 'raw_data' en source('raw_data', 'iris')
+    schema: raw_data  # El nombre de tu dataset en BigQuery
+    tables:
+      - name: iris     # Esto es 'iris' en source('raw_data', 'iris') 
+# ==================================
+
+models:
+  - name: stg_iris
+    description: "Modelo Staging para los datos de Iris. Limpia y renombra las columnas de la tabla raw."
+    columns:
+      - name: species_name
+        description: "El nombre de la especie de Iris."
+        tests:
+          - not_null
+          # ==================================
+          # 2. AÑADE LA PALABRA 'arguments:'
+          # Esto soluciona el Warning
+          # ==================================
+          - accepted_values:
+              arguments: 
+                values: ['iris_setosa', 'iris_versicolor', 'iris_virginica']
